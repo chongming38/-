@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>预览 - 手机端画廊入口</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&family=Inter:wght@300;400&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0a0a0a;
+      color: #e8e8e8;
+      font-family: 'Inter', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .label {
+      font-size: 0.62rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: #c9a96e;
+      margin-bottom: 3rem;
+    }
+
+    /* 电脑端：嵌入 iframe（现在的效果） */
+    .desktop-version {
+      width: 100%;
+      max-width: 860px;
+      border: 1px solid #222;
+      aspect-ratio: 16/9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #444;
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+      margin-bottom: 5rem;
+    }
+
+    /* 手机端入口卡片 */
+    .mobile-card {
+      width: 100%;
+      max-width: 340px;
+      border: 1px solid #222;
+      background: #111;
+      overflow: hidden;
+      cursor: pointer;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+
+    .mobile-card:hover {
+      border-color: #c9a96e;
+      transform: translateY(-3px);
+    }
+
+    .card-thumb {
+      aspect-ratio: 16/9;
+      background: #1a1a1a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card-thumb-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.8rem;
+      font-weight: 300;
+      letter-spacing: 0.15em;
+      color: #333;
+    }
+
+    /* 模拟几张小卡片在背景里 */
+    .card-thumb::before {
+      content: '';
+      position: absolute;
+      width: 60px;
+      height: 84px;
+      background: #222;
+      border: 1px solid #2a2a2a;
+      transform: rotate(-8deg) translateX(-40px);
+    }
+
+    .card-thumb::after {
+      content: '';
+      position: absolute;
+      width: 60px;
+      height: 84px;
+      background: #1e1e1e;
+      border: 1px solid #2a2a2a;
+      transform: rotate(5deg) translateX(40px);
+    }
+
+    .card-body {
+      padding: 1.3rem 1.5rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem;
+      font-weight: 300;
+      color: #f0ece4;
+    }
+
+    .card-cta {
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #c9a96e;
+      border: 1px solid #c9a96e;
+      padding: 0.4rem 0.8rem;
+    }
+
+    .note {
+      margin-top: 2rem;
+      font-size: 0.72rem;
+      color: #444;
+      letter-spacing: 0.05em;
+      text-align: center;
+      line-height: 1.8;
+    }
+  </style>
+</head>
+<body>
+
+  <p class="label">手机端 — 画廊入口预览</p>
+
+  <a class="mobile-card" href="magazine-portfolio/index.html" target="_blank" style="text-decoration:none;color:inherit;display:block;">
+    <div class="card-thumb">
+      <span class="card-thumb-text">THE ARCHIVE</span>
+    </div>
+    <div class="card-body">
+      <span class="card-title">AI 视觉画廊</span>
+      <span class="card-cta">进入 →</span>
+    </div>
+  </div>
+
+  <p class="note">
+    手机端点击"进入"，画廊在整个屏幕里打开<br />
+    电脑端依然是嵌入页面的效果
+  </p>
+
+</body>
+</html>

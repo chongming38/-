@@ -627,73 +627,84 @@ let lastTheme = 'light';
 let transitioning = false;
 let currentDetailIndex = 0;
 
+const isMobile = window.innerWidth < 768;
+const visibleRange = isMobile ? 1.8 : 3;
+let rafPending = false;
+
 function update() {
   const maxScroll = document.getElementById('scroll-trigger').scrollHeight - window.innerHeight;
   const prog = Math.min(1, Math.max(0, window.scrollY / maxScroll));
   const activeFloat = prog * (CARDS.length - 1);
   const activeIdx = Math.round(activeFloat);
+  const radius = Math.max(260, Math.min(420, window.innerWidth * 0.3));
 
-  // Spiral path
   cardEls.forEach((card, i) => {
     const off = i - activeFloat;
     const dist = Math.abs(off);
 
-    // Helix: x follows sine, z follows cosine-based depth
+    // 不可见的卡片直接跳过，省掉三角函数计算
+    if (dist > visibleRange + 0.5) {
+      if (card.style.opacity !== '0') {
+        card.style.opacity = 0;
+        card.style.transform = 'translate(-50%, -50%) scale(0)';
+      }
+      return;
+    }
+
     const angle = off * (Math.PI / 2.5);
-    const radius = Math.max(260, Math.min(420, window.innerWidth * 0.3));
     const x = Math.sin(angle) * radius;
     const z = (Math.cos(angle) - 1) * (radius * 0.75);
     const y = off * -12;
     const ry = angle * (180 / Math.PI) * 0.55;
     const rz = off * -2.5;
     const scale = dist > 3.5 ? 0 : Math.max(0.52, 1 - dist * 0.13);
-    const opacity = dist > 3 ? 0 : Math.max(0.04, 1 - dist * 0.37);
+    const opacity = dist > visibleRange ? 0 : Math.max(0.04, 1 - dist * 0.37);
 
     card.style.transform =
-      `translate(-50%, -50%) translateX(${x}px) translateY(${y}px) translateZ(${z}px) rotateY(${ry}deg) rotateZ(${rz}deg) scale(${scale})`;
-    card.style.opacity = opacity;
+      `translate(-50%, -50%) translateX(${Math.round(x)}px) translateY(${Math.round(y)}px) translateZ(${Math.round(z)}px) rotateY(${ry.toFixed(1)}deg) rotateZ(${rz.toFixed(1)}deg) scale(${scale.toFixed(3)})`;
+    card.style.opacity = opacity.toFixed(3);
     card.style.zIndex = Math.round(50 - dist * 8);
     card.classList.toggle('active', i === activeIdx);
   });
 
-  // Dots
   dots.forEach((d, i) => d.classList.toggle('active', i === activeIdx));
 
-  // Counter
   document.getElementById('card-counter').textContent =
     String(activeIdx + 1).padStart(2, '0') + ' / ' + String(CARDS.length).padStart(2, '0');
 
-  // Scroll hint
   if (window.scrollY > 80) {
     document.getElementById('scroll-hint').classList.add('hidden');
   }
 
-  // Theme switch
   const newTheme = CARDS[activeIdx].theme;
   if (newTheme !== lastTheme && !transitioning) {
     transitioning = true;
     const flash = document.getElementById('theme-flash');
     const glitch = document.getElementById('glitch-lines');
-
     flash.className = '';
     flash.offsetHeight;
     flash.className = newTheme === 'light' ? 'flash-light' : 'flash-dark';
-
     glitch.className = '';
     glitch.offsetHeight;
     glitch.className = 'active';
-
     setTimeout(() => {
       document.body.classList.toggle('light-theme', newTheme === 'light');
       document.body.classList.toggle('dark-theme', newTheme === 'dark');
     }, 180);
-
     setTimeout(() => { transitioning = false; }, 700);
     lastTheme = newTheme;
   }
 }
 
-window.addEventListener('scroll', update, { passive: true });
+// RAF 节流：每帧最多执行一次，手机不再每个像素都算
+window.addEventListener('scroll', () => {
+  if (rafPending) return;
+  rafPending = true;
+  requestAnimationFrame(() => {
+    update();
+    rafPending = false;
+  });
+}, { passive: true });
 document.body.classList.add('light-theme');
 update();
 
