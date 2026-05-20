@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THE ARCHIVE — Visual Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:ital@0;1&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #080808;
+  --fg: #f0ece4;
+  --accent: #c8102e;
+  --card-w: clamp(200px, 28vw, 320px);
+}
+
+html { scroll-behavior: auto; }
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Space Mono', monospace;
+  overflow-x: hidden;
+  transition: background 0.01s;
+}
+
+/* ─── NOISE OVERLAY ─── */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9998;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px;
+  transition: opacity 0.6s ease;
+}
+body.light-theme::after { opacity: 0.015; }
+
+/* ─── SCROLL TRIGGER ─── */
+#scroll-trigger { height: 700vh; position: relative; }
+
+/* ─── FIXED SCENE ─── */
+#scene {
+  position: fixed;
+  inset: 0;
+  perspective: 1100px;
+  perspective-origin: 50% 50%;
+  overflow: hidden;
+}
+
+/* ─── BACKGROUND LAYERS ─── */
+#bg-layer {
+  position: absolute;
+  inset: 0;
+  background: #080808;
+  transition: background 0.7s ease;
+}
+body.light-theme #bg-layer { background: #f0ebe0; }
+
+/* ─── CARDS WRAPPER ─── */
+#cards-wrapper {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+}
+
+/* ─── CARD ─── */
+.card {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--card-w);
+  aspect-ratio: 3 / 4.2;
+  cursor: pointer;
+  transform-style: preserve-3d;
+  will-change: transform, opacity;
+  transition: transform 0.06s linear, opacity 0.06s linear;
+  border-radius: 3px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+
+.card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* Placeholder when image missing */
+.card-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1a1a1a;
+  color: #444;
+  font-size: 11px;
+  text-align: center;
+  padding: 16px;
+  line-height: 1.6;
+}
+body.light-theme .card-placeholder { background: #d0c8bc; color: #888; }
+
+.card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.3) 45%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 20px 16px 18px;
+}
+.card.active .card-overlay,
+.card:hover .card-overlay { opacity: 1; }
+
+.card-label {
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: rgba(240,236,228,0.6);
+  margin-bottom: 6px;
+  font-family: 'Space Mono', monospace;
+}
+.card-title-small {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(18px, 3vw, 26px);
+  letter-spacing: 0.06em;
+  line-height: 1;
+  color: #f0ece4;
+  margin-bottom: 2px;
+}
+.card-sub-small {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  color: rgba(240,236,228,0.55);
+  letter-spacing: 0.1em;
+  margin-bottom: 10px;
+}
+.card-cta {
+  display: inline-block;
+  font-size: 8px;
+  letter-spacing: 0.22em;
+  color: var(--accent);
+  border-bottom: 1px solid var(--accent);
+  padding-bottom: 2px;
+}
+
+/* ─── REFLECTION SHINE ─── */
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: 3px;
+}
+.card.active::before { opacity: 1; }
+
+/* ─── PROGRESS DOTS ─── */
+#progress-nav {
+  position: fixed;
+  left: 28px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 500;
+}
+
+.p-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(240,236,228,0.25);
+  cursor: pointer;
+  transition: all 0.35s ease;
+  position: relative;
+}
+.p-dot::after {
+  content: attr(data-label);
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: rgba(240,236,228,0.4);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  font-family: 'Space Mono', monospace;
+}
+.p-dot:hover::after { opacity: 1; }
+.p-dot.active {
+  background: var(--fg);
+  transform: scale(1.7);
+}
+body.light-theme .p-dot { background: rgba(26,20,16,0.2); }
+body.light-theme .p-dot.active { background: #1a1410; }
+body.light-theme .p-dot::after { color: rgba(26,20,16,0.4); }
+
+/* ─── CARD INDEX LABEL ─── */
+#card-counter {
+  position: fixed;
+  bottom: 36px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  color: rgba(240,236,228,0.35);
+  z-index: 500;
+  transition: color 0.6s ease;
+  font-family: 'Space Mono', monospace;
+}
+body.light-theme #card-counter { color: rgba(26,20,16,0.3); }
+
+/* ─── SCROLL HINT ─── */
+#scroll-hint {
+  position: fixed;
+  bottom: 36px;
+  right: 36px;
+  z-index: 500;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  opacity: 1;
+  transition: opacity 0.5s ease;
+}
+#scroll-hint.hidden { opacity: 0; pointer-events: none; }
+#scroll-hint span {
+  font-size: 8px;
+  letter-spacing: 0.22em;
+  color: rgba(240,236,228,0.3);
+  writing-mode: vertical-rl;
+  font-family: 'Space Mono', monospace;
+}
+#scroll-hint .arrow {
+  width: 1px;
+  height: 40px;
+  background: linear-gradient(to bottom, transparent, rgba(240,236,228,0.3));
+  animation: arrow-pulse 1.8s ease-in-out infinite;
+}
+@keyframes arrow-pulse {
+  0%, 100% { transform: scaleY(0.5) translateY(-10px); opacity: 0; }
+  50% { transform: scaleY(1) translateY(0); opacity: 1; }
+}
+body.light-theme #scroll-hint span { color: rgba(26,20,16,0.3); }
+body.light-theme #scroll-hint .arrow { background: linear-gradient(to bottom, transparent, rgba(26,20,16,0.25)); }
+
+/* ─── THEME TRANSITION FLASH ─── */
+#theme-flash {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9000;
+  opacity: 0;
+}
+#theme-flash.flash-dark {
+  animation: flash-to-dark 0.65s ease forwards;
+  background: #080808;
+}
+#theme-flash.flash-light {
+  animation: flash-to-light 0.65s ease forwards;
+  background: #f0ebe0;
+}
+@keyframes flash-to-dark {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  60% { opacity: 0.6; clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+  100% { opacity: 0; clip-path: polygon(0 0, 0 0, 0 100%, 0 100%); }
+}
+@keyframes flash-to-light {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  60% { opacity: 0.6; clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+  100% { opacity: 0; clip-path: polygon(100% 0, 100% 0, 100% 100%, 100% 100%); }
+}
+
+/* ─── GLITCH LINES (dark→light boundary) ─── */
+#glitch-lines {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 8999;
+  opacity: 0;
+}
+#glitch-lines.active {
+  animation: glitch-flash 0.5s steps(1) forwards;
+}
+@keyframes glitch-flash {
+  0% { opacity: 0; }
+  10% { opacity: 1; background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(200,16,46,0.15) 3px, rgba(200,16,46,0.15) 4px); }
+  25% { opacity: 1; background: repeating-linear-gradient(0deg, transparent, transparent 7px, rgba(255,255,255,0.08) 7px, rgba(255,255,255,0.08) 8px); transform: translateX(-3px); }
+  40% { opacity: 1; background: repeating-linear-gradient(0deg, transparent, transparent 5px, rgba(200,16,46,0.1) 5px, rgba(200,16,46,0.1) 6px); transform: translateX(2px); }
+  60% { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+/* ─── DETAIL VIEW ─── */
+#detail-view {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.45s ease;
+}
+#detail-view.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+#detail-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(5, 5, 5, 0.96);
+  cursor: pointer;
+}
+#detail-view[data-theme="light"] #detail-backdrop {
+  background: rgba(240, 235, 224, 0.97);
+}
+
+#detail-content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5vw;
+  padding: 60px 6vw;
+}
+
+#detail-image-wrap {
+  flex: 0 0 auto;
+  height: min(80vh, 520px);
+  aspect-ratio: 3 / 4.2;
+  overflow: hidden;
+  border-radius: 2px;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+  transform: translateY(20px);
+  transition: transform 0.5s cubic-bezier(0.16,1,0.3,1) 0.15s;
+}
+#detail-view.open #detail-image-wrap { transform: translateY(0); }
+
+#detail-image-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+#detail-text {
+  flex: 1;
+  max-width: 380px;
+  transform: translateY(24px);
+  transition: transform 0.5s cubic-bezier(0.16,1,0.3,1) 0.25s;
+}
+#detail-view.open #detail-text { transform: translateY(0); }
+
+#detail-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: var(--accent);
+  margin-bottom: 16px;
+}
+#detail-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(42px, 6vw, 78px);
+  letter-spacing: 0.04em;
+  line-height: 0.92;
+  color: #f0ece4;
+  margin-bottom: 6px;
+}
+#detail-view[data-theme="light"] #detail-title { color: #1a1410; }
+
+#detail-subtitle {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: rgba(240,236,228,0.45);
+  margin-bottom: 28px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid rgba(240,236,228,0.1);
+}
+#detail-view[data-theme="light"] #detail-subtitle { color: rgba(26,20,16,0.4); border-color: rgba(26,20,16,0.12); }
+
+#detail-intro {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 17px;
+  line-height: 1.85;
+  color: rgba(240,236,228,0.75);
+  font-style: italic;
+  letter-spacing: 0.02em;
+}
+#detail-view[data-theme="light"] #detail-intro { color: rgba(26,20,16,0.65); }
+
+#detail-close {
+  position: absolute;
+  top: 28px;
+  right: 32px;
+  background: none;
+  border: none;
+  color: rgba(240,236,228,0.4);
+  font-size: 28px;
+  cursor: pointer;
+  font-weight: 300;
+  line-height: 1;
+  z-index: 2;
+  transition: color 0.2s ease, transform 0.2s ease;
+  font-family: serif;
+}
+#detail-close:hover { color: var(--fg); transform: rotate(90deg); }
+#detail-view[data-theme="light"] #detail-close { color: rgba(26,20,16,0.35); }
+#detail-view[data-theme="light"] #detail-close:hover { color: #1a1410; }
+
+/* ─── DETAIL NAV ─── */
+.detail-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: rgba(240,236,228,0.25);
+  font-size: 36px;
+  cursor: pointer;
+  z-index: 2;
+  transition: color 0.25s ease;
+  font-family: serif;
+  line-height: 1;
+  padding: 16px;
+}
+.detail-nav-btn:hover { color: rgba(240,236,228,0.7); }
+#detail-prev { left: 16px; }
+#detail-next { right: 16px; }
+#detail-view[data-theme="light"] .detail-nav-btn { color: rgba(26,20,16,0.2); }
+#detail-view[data-theme="light"] .detail-nav-btn:hover { color: rgba(26,20,16,0.6); }
+
+/* ─── LIGHT THEME OVERRIDES ─── */
+body.light-theme .card-overlay {
+  background: linear-gradient(to top, rgba(240,235,224,0.9) 0%, rgba(240,235,224,0.3) 45%, transparent 70%);
+}
+body.light-theme .card-label { color: rgba(26,20,16,0.5); }
+body.light-theme .card-title-small { color: #1a1410; }
+body.light-theme .card-sub-small { color: rgba(26,20,16,0.45); }
+body.light-theme .card-cta { color: #4a6fa5; border-color: #4a6fa5; }
+body.light-theme .card { box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 640px) {
+  #detail-content { flex-direction: column; gap: 24px; padding: 80px 20px 40px; overflow-y: auto; }
+  #detail-image-wrap { height: min(50vh, 280px); width: auto; }
+  #detail-text { max-width: 100%; }
+  #progress-nav { left: 14px; }
+  #scroll-hint { right: 16px; bottom: 24px; }
+}
+</style>
+</head>
+<body>
+
+<div id="scroll-trigger"></div>
+
+<div id="scene">
+  <div id="bg-layer"></div>
+  <div id="cards-wrapper"></div>
+</div>
+
+<nav id="progress-nav"></nav>
+<div id="card-counter">01 / 06</div>
+
+<div id="scroll-hint">
+  <span>SCROLL</span>
+  <div class="arrow"></div>
+</div>
+
+<div id="theme-flash"></div>
+<div id="glitch-lines"></div>
+
+<div id="detail-view">
+  <div id="detail-backdrop"></div>
+  <div id="detail-content">
+    <button id="detail-prev" class="detail-nav-btn">&#8249;</button>
+    <div id="detail-image-wrap"><img id="detail-img" src="" alt=""></div>
+    <div id="detail-text">
+      <div id="detail-label"></div>
+      <h1 id="detail-title"></h1>
+      <p id="detail-subtitle"></p>
+      <p id="detail-intro"></p>
+    </div>
+    <button id="detail-next" class="detail-nav-btn">&#8250;</button>
+  </div>
+  <button id="detail-close">&#x2715;</button>
+</div>
+
+<script>
+const CARDS = [
+  {
+    img: 'images/1-spur.png',
+    label: 'SPUR · AUGUST 2026 · 35TH ANNIVERSARY',
+    title: 'QIU TING',
+    subtitle: 'STAY COOL — 夏をほどく、軽やかな装い',
+    intro: 'SPUR 35 周年，夏天依然从这里开始。奶白色与碎花之间，日本夏日的心绪被蒸馏成一帧。涼やかに咲く、夏のおしゃれ。',
+    navLabel: 'SPUR',
+    theme: 'light',
+    accent: '#4a6fa5'
+  },
+  {
+    img: 'images/2-focus.png',
+    label: 'FOCUS · PROFILE 2026',
+    title: 'QUIET',
+    subtitle: 'VISION — BLURRED, BUT STILL ME',
+    intro: '模糊，但依然是我。在一个行进过快的世界里，FOCUS 选择看见真正重要的事。轻柔地聚焦，缓慢地生活，清晰地成为你自己。',
+    navLabel: 'FOCUS',
+    theme: 'light',
+    accent: '#c8102e'
+  },
+  {
+    img: 'images/3-sense-of-style.png',
+    label: 'SENSE OF STYLE · P.107',
+    title: 'JIANG GE',
+    subtitle: 'BUSINESS STYLE PART 1 — モダンな知性',
+    intro: '双排扣西装作为一种哲学。驼色羊毛、深色领带，以及一个用意图穿衣的男人所散发的沉静权威。シンプルなスーツ姿こそ、男の色気が薫り立つ。',
+    navLabel: 'SENSE OF STYLE',
+    theme: 'light',
+    accent: '#8b6914'
+  },
+  {
+    img: 'images/4-jiang-profile.png',
+    label: '2026 · MAY ISSUE',
+    title: 'JIANG',
+    subtitle: 'THE PROFILE — A MODERN PORTRAIT',
+    intro: '一幅定义了这个季节的肖像。黑白的粗粝质感捕捉了存在的重量——不慌不忙，毫不妥协。THE PROFILE 不仅仅是一张封面，它是一种宣言。',
+    navLabel: 'JIANG PROFILE',
+    theme: 'dark',
+    accent: '#c8102e'
+  },
+  {
+    img: 'images/5-frame.png',
+    label: 'FRAME · ISSUE 05',
+    title: 'THE SILENCE',
+    subtitle: 'HAS SHAPE',
+    intro: '一项关于静止的研究。FRAME 第五期剥去一切噪音，去发现当所有多余之物被移除后，剩下的究竟是什么。沉默也有它的轮廓。',
+    navLabel: 'FRAME 05',
+    theme: 'dark',
+    accent: '#ffffff'
+  },
+  {
+    img: 'images/6-icon.png',
+    label: 'ICON · ALL ROUNDER DESIGN ISSUE',
+    title: 'ICON',
+    subtitle: 'COMPANY: SELF — ALBUMS: GOLDEN HOUR',
+    intro: '当下的乐队成员。GOLDEN HOUR——一张专辑，一个自我公司，一种哲学。ICON 记录那些拒绝被单一标签定义的人。',
+    navLabel: 'ICON',
+    theme: 'dark',
+    accent: '#c8102e'
+  }
+];
+
+// ─── BUILD DOM ───
+const wrapper = document.getElementById('cards-wrapper');
+const navEl = document.getElementById('progress-nav');
+
+const cardEls = CARDS.map((data, i) => {
+  const el = document.createElement('div');
+  el.className = 'card';
+  el.dataset.index = i;
+
+  const img = document.createElement('img');
+  img.src = data.img;
+  img.alt = data.title;
+  img.loading = i === 0 ? 'eager' : 'lazy';
+  img.onerror = function() {
+    const ph = document.createElement('div');
+    ph.className = 'card-placeholder';
+    ph.textContent = `[ ${data.title} ]\n${data.label}`;
+    this.replaceWith(ph);
+  };
+
+  const overlay = document.createElement('div');
+  overlay.className = 'card-overlay';
+  overlay.innerHTML = `
+    <div class="card-label">${data.label}</div>
+    <div class="card-title-small">${data.title}</div>
+    <div class="card-sub-small">${data.subtitle.split('—')[0].trim()}</div>
+    <div class="card-cta">VIEW →</div>
+  `;
+
+  el.appendChild(img);
+  el.appendChild(overlay);
+  el.addEventListener('click', () => openDetail(i));
+  wrapper.appendChild(el);
+  return el;
+});
+
+const dots = CARDS.map((data, i) => {
+  const d = document.createElement('div');
+  d.className = 'p-dot';
+  d.dataset.label = data.navLabel;
+  d.addEventListener('click', () => scrollToCard(i));
+  navEl.appendChild(d);
+  return d;
+});
+
+// ─── SCROLL ───
+function scrollToCard(i) {
+  const maxScroll = document.getElementById('scroll-trigger').scrollHeight - window.innerHeight;
+  window.scrollTo({ top: (i / (CARDS.length - 1)) * maxScroll, behavior: 'smooth' });
+}
+
+let lastTheme = 'light';
+let transitioning = false;
+let currentDetailIndex = 0;
+
+function update() {
+  const maxScroll = document.getElementById('scroll-trigger').scrollHeight - window.innerHeight;
+  const prog = Math.min(1, Math.max(0, window.scrollY / maxScroll));
+  const activeFloat = prog * (CARDS.length - 1);
+  const activeIdx = Math.round(activeFloat);
+
+  // Spiral path
+  cardEls.forEach((card, i) => {
+    const off = i - activeFloat;
+    const dist = Math.abs(off);
+
+    // Helix: x follows sine, z follows cosine-based depth
+    const angle = off * (Math.PI / 2.5);
+    const radius = Math.max(260, Math.min(420, window.innerWidth * 0.3));
+    const x = Math.sin(angle) * radius;
+    const z = (Math.cos(angle) - 1) * (radius * 0.75);
+    const y = off * -12;
+    const ry = angle * (180 / Math.PI) * 0.55;
+    const rz = off * -2.5;
+    const scale = dist > 3.5 ? 0 : Math.max(0.52, 1 - dist * 0.13);
+    const opacity = dist > 3 ? 0 : Math.max(0.04, 1 - dist * 0.37);
+
+    card.style.transform =
+      `translate(-50%, -50%) translateX(${x}px) translateY(${y}px) translateZ(${z}px) rotateY(${ry}deg) rotateZ(${rz}deg) scale(${scale})`;
+    card.style.opacity = opacity;
+    card.style.zIndex = Math.round(50 - dist * 8);
+    card.classList.toggle('active', i === activeIdx);
+  });
+
+  // Dots
+  dots.forEach((d, i) => d.classList.toggle('active', i === activeIdx));
+
+  // Counter
+  document.getElementById('card-counter').textContent =
+    String(activeIdx + 1).padStart(2, '0') + ' / ' + String(CARDS.length).padStart(2, '0');
+
+  // Scroll hint
+  if (window.scrollY > 80) {
+    document.getElementById('scroll-hint').classList.add('hidden');
+  }
+
+  // Theme switch
+  const newTheme = CARDS[activeIdx].theme;
+  if (newTheme !== lastTheme && !transitioning) {
+    transitioning = true;
+    const flash = document.getElementById('theme-flash');
+    const glitch = document.getElementById('glitch-lines');
+
+    flash.className = '';
+    flash.offsetHeight;
+    flash.className = newTheme === 'light' ? 'flash-light' : 'flash-dark';
+
+    glitch.className = '';
+    glitch.offsetHeight;
+    glitch.className = 'active';
+
+    setTimeout(() => {
+      document.body.classList.toggle('light-theme', newTheme === 'light');
+      document.body.classList.toggle('dark-theme', newTheme === 'dark');
+    }, 180);
+
+    setTimeout(() => { transitioning = false; }, 700);
+    lastTheme = newTheme;
+  }
+}
+
+window.addEventListener('scroll', update, { passive: true });
+document.body.classList.add('light-theme');
+update();
+
+// ─── DETAIL VIEW ───
+const detailView = document.getElementById('detail-view');
+
+function openDetail(i) {
+  currentDetailIndex = i;
+  const data = CARDS[i];
+  document.getElementById('detail-img').src = data.img;
+  document.getElementById('detail-label').textContent = data.label;
+  document.getElementById('detail-title').textContent = data.title;
+  document.getElementById('detail-subtitle').textContent = data.subtitle;
+  document.getElementById('detail-intro').textContent = data.intro;
+  detailView.dataset.theme = data.theme;
+
+  detailView.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDetail() {
+  detailView.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function navigateDetail(dir) {
+  const next = (currentDetailIndex + dir + CARDS.length) % CARDS.length;
+  // Quick swap
+  const wrap = document.getElementById('detail-image-wrap');
+  wrap.style.opacity = '0';
+  wrap.style.transform = `translateY(${dir > 0 ? -10 : 10}px)`;
+  setTimeout(() => {
+    openDetail(next);
+    wrap.style.transition = 'none';
+    wrap.style.opacity = '1';
+    wrap.style.transform = 'translateY(0)';
+    requestAnimationFrame(() => {
+      wrap.style.transition = '';
+    });
+  }, 180);
+}
+
+document.getElementById('detail-close').addEventListener('click', closeDetail);
+document.getElementById('detail-backdrop').addEventListener('click', closeDetail);
+document.getElementById('detail-prev').addEventListener('click', () => navigateDetail(-1));
+document.getElementById('detail-next').addEventListener('click', () => navigateDetail(1));
+
+document.addEventListener('keydown', e => {
+  if (!detailView.classList.contains('open')) return;
+  if (e.key === 'Escape') closeDetail();
+  if (e.key === 'ArrowLeft') navigateDetail(-1);
+  if (e.key === 'ArrowRight') navigateDetail(1);
+});
+</script>
+</body>
+</html>

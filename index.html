@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>廖忆轩</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0a;
+      --surface: #111111;
+      --border: #1e1e1e;
+      --text: #e8e8e8;
+      --muted: #666666;
+      --accent: #c9a96e;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-weight: 300;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* ── INTRO CURTAIN ── */
+    #intro {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      pointer-events: none;
+      animation: curtainOut 0.6s 4.3s ease forwards;
+    }
+
+    /* 砸进去时的光晕 */
+    #intro::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 50%, rgba(240,236,228,0.1) 0%, transparent 55%);
+      opacity: 0;
+      animation: flashPulse 0.9s 3.1s ease-out forwards;
+    }
+
+    @keyframes flashPulse {
+      0%   { opacity: 0; transform: scale(0.3); }
+      30%  { opacity: 1; transform: scale(1); }
+      100% { opacity: 0; transform: scale(1.8); }
+    }
+
+    .intro-line {
+      position: absolute;
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 300;
+      color: #f0ece4;
+      opacity: 0;
+      letter-spacing: 0.05em;
+    }
+
+    .intro-line1 {
+      font-size: clamp(2rem, 5.5vw, 4.5rem);
+      animation: line1Anim 2.1s 0.1s ease forwards;
+    }
+    .intro-line2 {
+      font-size: clamp(2rem, 5.5vw, 4.5rem);
+      animation: line2Crash 2.2s 1.6s ease forwards;
+      color: var(--accent);
+    }
+@keyframes line1Anim {
+      0%   { opacity: 0; }
+      20%  { opacity: 1; }
+      65%  { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    @keyframes line2Crash {
+      0%   { opacity: 0; transform: scale(1); filter: blur(0); }
+      18%  { opacity: 1; transform: scale(1); filter: blur(0); }
+      60%  { opacity: 1; transform: scale(1); filter: blur(0); }
+      90%  { opacity: 0.5; transform: scale(0.08); filter: blur(4px); }
+      100% { opacity: 0; transform: scale(0.02); filter: blur(7px); }
+    }
+
+    /* 被光聚出来：从模糊散开到清晰，字间距从宽收拢 */
+@keyframes curtainOut {
+      from { opacity: 1; }
+      to   { opacity: 0; visibility: hidden; }
+    }
+
+    /* ── MAIN CONTENT ── */
+    #main {
+      opacity: 0;
+      animation: fadeIn 1s 4.5s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    /* ── SHARED ── */
+    .section-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 7rem 2rem;
+    }
+
+    .section-label {
+      font-size: 0.62rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 3rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .section-label::after {
+      content: '';
+      height: 1px;
+      width: 60px;
+      background: var(--border);
+    }
+
+    /* ── ABOUT ── */
+    #about .section-inner {
+      padding-top: 9rem;
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.7fr;
+      gap: 4.5rem;
+      align-items: start;
+    }
+
+    .about-photo {
+      aspect-ratio: 3/4;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .about-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    .photo-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.6rem;
+      color: #333;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+    }
+
+    .about-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.2rem, 4vw, 3.2rem);
+      font-weight: 300;
+      line-height: 1.1;
+      margin-bottom: 1.8rem;
+      color: #f0ece4;
+    }
+
+    .about-bio {
+      font-size: 0.95rem;
+      line-height: 2;
+      color: #aaa;
+    }
+
+    .about-bio strong { color: var(--text); font-weight: 400; }
+
+    /* ── ERA ── */
+    #era {
+      background: #0d0d0d;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .era-heading {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.5rem, 7vw, 6rem);
+      font-weight: 300;
+      line-height: 1.1;
+      color: #f0ece4;
+      margin-bottom: 2.5rem;
+      opacity: 0;
+      transform: translateY(36vh) translateZ(0);
+      transition: none;
+    }
+
+    .era-heading.visible {
+      animation: eraHeadingFloat 3.8s ease forwards;
+    }
+
+    @keyframes eraHeadingFloat {
+      0%   { opacity: 0; transform: translateY(36vh) translateZ(0); }
+      10%  { opacity: 1; transform: translateY(36vh) translateZ(0); animation-timing-function: linear; }
+      62%  { opacity: 1; transform: translateY(36vh) translateZ(0); animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
+      86%  { opacity: 1; transform: translateY(0) translateZ(0); }
+      100% { opacity: 1; transform: translateY(0) translateZ(0); }
+    }
+
+    .era-heading em { color: var(--accent); font-style: normal; }
+
+    .era-body {
+      font-size: 0.95rem;
+      line-height: 2.1;
+      color: #888;
+      max-width: 560px;
+    }
+
+    .era-body p + p { margin-top: 1.2rem; }
+
+    .magic-char {
+      display: inline;
+      opacity: 0;
+      filter: blur(4px);
+      transition: opacity 0.3s ease, filter 0.3s ease;
+    }
+
+    .magic-char.appear {
+      opacity: 1;
+      filter: blur(0);
+    }
+
+    .magic-char.magic-accent {
+      color: #ffffff;
+    }
+
+    /* ── CAPABILITIES ── */
+    #capabilities { border-top: 1px solid var(--border); }
+
+    .cap-intro {
+      font-size: 0.62rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 4rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .cap-intro::after {
+      content: '';
+      height: 1px;
+      width: 60px;
+      background: var(--border);
+    }
+
+    .cap-list { display: flex; flex-direction: column; }
+
+    .cap-item {
+      display: grid;
+      grid-template-columns: 3.5rem 1fr auto;
+      align-items: center;
+      gap: 2rem;
+      padding: 2.2rem 0;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.3s;
+      cursor: default;
+    }
+    .cap-item:first-child { border-top: 1px solid var(--border); }
+
+    .cap-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.85rem;
+      font-weight: 300;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      line-height: 1;
+    }
+
+    .cap-body { display: flex; flex-direction: column; gap: 0.35rem; }
+
+    .cap-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 300;
+      color: #f0ece4;
+      line-height: 1;
+      transition: color 0.3s;
+    }
+
+    .cap-desc {
+      font-size: 0.92rem;
+      color: var(--muted);
+      letter-spacing: 0.02em;
+      line-height: 1.6;
+    }
+
+    .cap-arrow {
+      font-size: 1.2rem;
+      color: #2a2a2a;
+      transition: color 0.3s, transform 0.3s;
+    }
+
+    .cap-item:hover .cap-name { color: var(--accent); }
+    .cap-item:hover .cap-arrow { color: var(--accent); transform: translateX(4px); }
+
+    /* ── WORKS ── */
+    #works {
+      border-top: 1px solid var(--border);
+      background: #0a0a0a;
+    }
+
+    .works-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .work-card {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      overflow: hidden;
+      transition: border-color 0.3s, transform 0.3s;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+
+    .work-card:hover { border-color: var(--accent); transform: translateY(-4px); }
+
+    .work-thumb {
+      aspect-ratio: 16/9;
+      background: #161616;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #333;
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      overflow: hidden;
+    }
+
+    .work-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+    .work-info { padding: 1.3rem 1.5rem 1.5rem; }
+
+    .work-title { font-size: 0.95rem; font-weight: 400; margin-bottom: 0.5rem; }
+
+    .work-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.7; }
+
+    .works-embed {
+      width: 100%;
+      position: relative;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .works-overlay {
+      position: absolute;
+      inset: 0;
+      background: #0a0a0a;
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    .works-embed iframe {
+      width: 100%;
+      height: 88vh;
+      display: block;
+    }
+
+    .works-embed-label {
+      position: absolute;
+      bottom: 1.5rem;
+      right: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+
+    .works-embed-label span { color: #444; }
+
+    .works-embed-label a {
+      color: var(--accent);
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+
+    .works-embed-label a:hover { opacity: 0.7; }
+
+    /* ── WRITING ── */
+    #writing {
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+    }
+
+    .writing-hero {
+      padding: 10rem 2rem 6rem;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    .writing-hero-quote {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.2rem, 5.5vw, 4.2rem);
+      font-style: italic;
+      font-weight: 300;
+      line-height: 1.4;
+      color: #f0ece4;
+      opacity: 0;
+      filter: blur(14px);
+      transform: scale(1.06);
+      transition: opacity 2.2s ease, filter 2.2s ease, transform 2.2s ease;
+    }
+
+    .writing-hero-quote.visible {
+      opacity: 1;
+      filter: blur(0);
+      transform: scale(1);
+    }
+
+    .writing-divider {
+      width: 0;
+      height: 1px;
+      background: #2a2a2a;
+      margin: 5rem 2rem;
+      transition: width 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+      max-width: 860px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .writing-divider.visible { width: calc(100% - 4rem); }
+
+    .writing-lines {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 2rem 10rem;
+    }
+
+    .writing-line {
+      padding: 4rem 0;
+      border-top: 1px solid #161616;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 300;
+      color: #666;
+      line-height: 1.5;
+      transition: color 0.5s ease;
+      min-height: 5rem;
+    }
+
+    .writing-line:last-child { border-bottom: 1px solid #161616; }
+    .writing-line:hover { color: #c8c4be; }
+
+    /* ── CONTACT ── */
+    #contact {
+      border-top: 1px solid var(--border);
+      text-align: center;
+    }
+
+    .contact-heading {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.8rem, 7vw, 6rem);
+      font-weight: 300;
+      color: #f0ece4;
+      margin-bottom: 1rem;
+      letter-spacing: 0.05em;
+    }
+
+    .contact-sub {
+      font-size: 0.82rem;
+      color: var(--muted);
+      letter-spacing: 0.15em;
+      margin-bottom: 5rem;
+    }
+
+    .contact-body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6rem;
+      flex-wrap: wrap;
+    }
+
+    .contact-qr-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.2rem;
+    }
+
+    .contact-qr {
+      width: 180px;
+      height: 180px;
+      object-fit: cover;
+      background: #fff;
+      padding: 12px;
+      display: block;
+    }
+
+    .contact-qr-label {
+      font-size: 0.68rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #444;
+    }
+
+    .contact-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2.5rem;
+      text-align: left;
+    }
+
+    .contact-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .contact-item-label {
+      font-size: 0.62rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .contact-item-value {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.8rem;
+      font-weight: 300;
+      color: #f0ece4;
+      letter-spacing: 0.05em;
+      line-height: 1;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem;
+      text-align: center;
+      font-size: 0.68rem;
+      color: #333;
+      letter-spacing: 0.1em;
+    }
+
+    /* ── REVEAL ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity 0.9s ease, transform 0.9s ease;
+    }
+
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 640px) {
+      .about-grid { grid-template-columns: 1fr; gap: 2rem; }
+      .about-photo { aspect-ratio: 1/1; }
+      .essay-item { grid-template-columns: 1fr; gap: 0.3rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── INTRO CURTAIN ── -->
+<div id="intro">
+  <p class="intro-line intro-line1">得到不是开始</p>
+  <p class="intro-line intro-line2">使用才是</p>
+</div>
+
+<!-- ── MAIN CONTENT ── -->
+<div id="main">
+
+  <!-- ERA -->
+  <section id="era">
+    <div class="section-inner">
+      <h2 class="era-heading">
+        我们的<br />时代在<em>开始</em>
+      </h2>
+      <div class="era-body">
+        <p>在 AI 迅猛发展的时代，它是杠杆，每个人的能力都被迅速放大。无数人可以轻而易举地获得它，但得到永远不是开始，使用才是。</p>
+        <p>这个时代不缺看懂的人，缺的是动手的人。我们是后者。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="section-inner">
+      <p class="section-label reveal">自我介绍</p>
+      <div class="reveal">
+        <h1 class="about-name">廖忆轩</h1>
+        <p class="about-bio">
+          喜欢文学，对文字敏感。正在用 AI 将文字具象为图片，又将图文构建成网站，最终链接为视频。<br /><br />
+          <em>人将感受刻印在文字里，又将借着 AI 重新呈现于眼前。</em>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CAPABILITIES -->
+  <section id="capabilities">
+    <div class="section-inner">
+      <p class="cap-intro reveal">我能做什么</p>
+      <div class="cap-list">
+
+        <div class="cap-item reveal">
+          <span class="cap-num">01</span>
+          <div class="cap-body">
+            <span class="cap-name">内容写作</span>
+            <span class="cap-desc">文章、品牌文案、日常内容创作 — 对语言有感受，写得出有温度的文字</span>
+          </div>
+          <span class="cap-arrow">→</span>
+        </div>
+
+        <div class="cap-item reveal">
+          <span class="cap-num">02</span>
+          <div class="cap-body">
+            <span class="cap-name">影像定制</span>
+            <span class="cap-desc">描述需求，直接生成 — 省去拍摄与后期，按场景定制有质感的视觉素材</span>
+          </div>
+          <span class="cap-arrow">→</span>
+        </div>
+
+        <div class="cap-item reveal">
+          <span class="cap-num">03</span>
+          <div class="cap-body">
+            <span class="cap-name">制作网站</span>
+            <span class="cap-desc">24 小时内交付网站原型 — 从需求到可见，让想法第一时间落地</span>
+          </div>
+          <span class="cap-arrow">→</span>
+        </div>
+
+        <div class="cap-item reveal">
+          <span class="cap-num">04</span>
+          <div class="cap-body">
+            <span class="cap-name">AI 工作流</span>
+            <span class="cap-desc">将以上整合为端到端的流程 — 内容、图像、网站，一套走完</span>
+          </div>
+          <span class="cap-arrow">→</span>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- WORKS -->
+  <section id="works">
+    <div class="section-inner">
+      <p class="section-label reveal">Works</p>
+    </div>
+    <div class="works-embed reveal">
+      <div class="works-overlay"></div>
+      <iframe
+        src="magazine-portfolio/index.html"
+        scrolling="yes"
+        frameborder="0"
+        title="THE ARCHIVE — Visual Portfolio"
+      ></iframe>
+      <div class="works-embed-label">
+        <span>THE ARCHIVE</span>
+        <a href="../magazine-portfolio/index.html" target="_blank">全屏查看 ↗</a>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="section-inner">
+      <h2 class="contact-heading reveal">来聊</h2>
+      <p class="contact-sub reveal">AI、写作，或者任何正在做的事</p>
+      <div class="contact-body reveal">
+        <div class="contact-qr-wrap">
+          <img class="contact-qr" src="微信图片_20260521002213_121_20.jpg" alt="微信二维码" />
+          <span class="contact-qr-label">微信 · 扫码添加</span>
+        </div>
+        <div class="contact-info">
+          <div class="contact-item">
+            <span class="contact-item-label">电话</span>
+            <span class="contact-item-value">151 0595 4347</span>
+          </div>
+          <div class="contact-item">
+            <span class="contact-item-label">QQ</span>
+            <span class="contact-item-value">3041858361</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>© 2025 廖忆轩 &nbsp;·&nbsp; 使用才是</footer>
+
+</div>
+
+<script>
+  // 把 era-body 的文字拆成逐字 span，标记高亮短语
+  const highlights = ['使用才是', '我们是后者'];
+  document.querySelectorAll('.era-body p').forEach(p => {
+    const text = p.textContent;
+    const accented = new Array(text.length).fill(false);
+    highlights.forEach(phrase => {
+      let idx = text.indexOf(phrase);
+      while (idx !== -1) {
+        for (let i = idx; i < idx + phrase.length; i++) accented[i] = true;
+        idx = text.indexOf(phrase, idx + 1);
+      }
+    });
+    p.innerHTML = text.split('').map((ch, i) =>
+      `<span class="magic-char${accented[i] ? ' magic-accent' : ''}">${ch === ' ' ? '&nbsp;' : ch}</span>`
+    ).join('');
+  });
+
+  // era 标题和正文在闪光时机触发，不走 IntersectionObserver
+  setTimeout(() => {
+    document.querySelector('.era-heading').classList.add('visible');
+  }, 3100);
+
+  setTimeout(() => {
+    const chars = document.querySelectorAll('.era-body .magic-char');
+    chars.forEach((ch, i) => {
+      setTimeout(() => ch.classList.add('appear'), i * 35);
+    });
+  }, 7200);
+
+  // 其余 section 正常滚动触发
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      e.target.classList.add('visible');
+      observer.unobserve(e.target);
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // Writing 三句话：逐字写出，一句写完再写下一句
+  const writingLines = document.querySelectorAll('.writing-line');
+  writingLines.forEach(line => {
+    const text = line.textContent;
+    line.innerHTML = text.split('').map(ch =>
+      `<span class="magic-char">${ch === ' ' ? '&nbsp;' : ch}</span>`
+    ).join('');
+  });
+
+  function revealWritingSequential() {
+    let offset = 0;
+    writingLines.forEach(line => {
+      const chars = line.querySelectorAll('.magic-char');
+      chars.forEach((ch, i) => {
+        setTimeout(() => ch.classList.add('appear'), offset + i * 65);
+      });
+      offset += chars.length * 65 + 600;
+    });
+  }
+
+  const writingObserver = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        revealWritingSequential();
+        writingObserver.disconnect();
+      }
+    });
+  }, { threshold: 0.2 });
+
+  if (writingLines[0]) writingObserver.observe(writingLines[0]);
+
+  // Works 区域：滚动时黑色遮罩慢慢褪去，露出下面的画廊
+  const worksEmbed = document.querySelector('.works-embed');
+  const worksOverlay = document.querySelector('.works-overlay');
+
+  window.addEventListener('scroll', () => {
+    const rect = worksEmbed.getBoundingClientRect();
+    const progress = Math.max(0, Math.min(1, (window.innerHeight - rect.top) / (window.innerHeight * 0.7)));
+    worksOverlay.style.opacity = 1 - progress;
+  }, { passive: true });
+</script>
+</body>
+</html>
